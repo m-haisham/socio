@@ -1,11 +1,16 @@
+use http::HeaderValue;
 use oauth2::{
     basic::{
         BasicErrorResponse, BasicRevocationErrorResponse, BasicTokenIntrospectionResponse,
         BasicTokenType,
     },
-    AuthUrl, Client, ClientId, ClientSecret, EmptyExtraTokenFields, EndpointNotSet, EndpointSet,
-    ExtraTokenFields, RedirectUrl, Scope, StandardRevocableToken, StandardTokenResponse, TokenUrl,
+    AuthUrl, Client, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields, EndpointNotSet,
+    EndpointSet, ExtraTokenFields, PkceCodeVerifier, RedirectUrl, Scope, StandardRevocableToken,
+    StandardTokenResponse, TokenUrl,
 };
+use url::Url;
+
+use crate::{error, integrations::SocioRedirect};
 
 pub type CustomClient<
     Fields = EmptyExtraTokenFields,
@@ -43,5 +48,20 @@ impl OAuth2Config {
             .set_redirect_uri(self.redirect_uri);
 
         client
+    }
+}
+
+#[derive(Debug)]
+pub struct AuthorizationRequest {
+    pub url: Url,
+    pub pkce_verifier: PkceCodeVerifier,
+    pub csrf_token: CsrfToken,
+}
+
+impl AuthorizationRequest {
+    pub fn redirect(&self) -> error::Result<SocioRedirect> {
+        let header_value = HeaderValue::from_str(self.url.as_str())
+            .map_err(|e| error::Error::HeaderValueError(e))?;
+        Ok(SocioRedirect::new(header_value))
     }
 }
