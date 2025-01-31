@@ -1,2 +1,3 @@
 [workspace]
 members = ["socio"]
+resolver = "2"
