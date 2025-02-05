@@ -85,18 +85,38 @@ pub fn get_socio_client() -> Socio {
     let config_content = std::fs::read_to_string("config.json").unwrap();
     let config = serde_json::from_str::<serde_json::Value>(&config_content).unwrap();
 
+    fn get_config_string(config: &serde_json::Value, key: &str) -> String {
+        config[key]
+            .as_str()
+            .expect(&format!("The key '{key}' is missing or not a string"))
+            .to_string()
+    }
+
+    fn get_config_string_list(config: &serde_json::Value, key: &str) -> Vec<String> {
+        config[key]
+            .as_array()
+            .expect(&format!("The key '{key}' is missing or not a list"))
+            .iter()
+            .map(|v| v.as_str().unwrap().to_string())
+            .collect()
+    }
+
+    fn get_config_scopes(config: &serde_json::Value, key: &str) -> Vec<Scope> {
+        get_config_string_list(config, key)
+            .into_iter()
+            .map(|s| Scope::new(s))
+            .collect()
+    }
+
     let config = OAuth2Config {
-        client_id: ClientId::new(config["client_id"].as_str().unwrap().to_string()),
-        client_secret: ClientSecret::new(config["client_secret"].as_str().unwrap().to_string()),
-        authorize_endpoint: AuthUrl::new(
-            config["authorize_endpoint"].as_str().unwrap().to_string(),
-        )
-        .unwrap(),
-        token_endpoint: TokenUrl::new(config["token_endpoint"].as_str().unwrap().to_string())
-            .unwrap(),
-        scopes: vec![Scope::new(config["scopes"].as_str().unwrap().to_string())],
-        redirect_uri: RedirectUrl::new(config["redirect_uri"].as_str().unwrap().to_string())
-            .unwrap(),
+        client_id: ClientId::new(get_config_string(&config, "client_id")),
+        client_secret: ClientSecret::new(get_config_string(&config, "client_secret")),
+        authorize_endpoint: AuthUrl::new(get_config_string(&config, "authorize_endpoint")).unwrap(),
+        token_endpoint: TokenUrl::new(get_config_string(&config, "token_endpoint"))
+            .expect("Invalid token endpoint"),
+        scopes: get_config_scopes(&config, "scopes"),
+        redirect_uri: RedirectUrl::new(get_config_string(&config, "redirect_uri"))
+            .expect("Invalid redirect URI"),
     };
 
     Socio::new(config)
