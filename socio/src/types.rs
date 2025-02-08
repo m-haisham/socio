@@ -78,11 +78,12 @@ impl AuthorizationRequest {
 
 #[derive(Debug)]
 pub struct Response<Claims> {
-    access_token: AccessToken,
-    refresh_token: Option<RefreshToken>,
-    expires_in: Option<Duration>,
-    scopes: Option<Vec<Scope>>,
-    claims: Claims,
+    pub access_token: AccessToken,
+    pub token_type: BasicTokenType,
+    pub refresh_token: Option<RefreshToken>,
+    pub expires_in: Option<Duration>,
+    pub scopes: Option<Vec<Scope>>,
+    pub claims: Claims,
 }
 
 impl<Claims> Response<Claims> {
@@ -92,6 +93,7 @@ impl<Claims> Response<Claims> {
     ) -> Self {
         Response {
             access_token: response.access_token().clone(),
+            token_type: response.token_type().clone(),
             refresh_token: response.refresh_token().cloned(),
             expires_in: response.expires_in(),
             scopes: response.scopes().cloned(),

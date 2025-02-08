@@ -1,21 +1,17 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
-
 use axum::{
     extract::{Query, State},
+    http::StatusCode,
     routing::get,
     Router,
 };
 use socio::{
     integrations::{SocioCallback, SocioRedirect},
-    oauth2::{
-        AuthUrl, AuthorizationCode, ClientId, ClientSecret, EmptyExtraTokenFields,
-        PkceCodeVerifier, RedirectUrl, Scope, TokenUrl,
-    },
-    types::OAuth2Config,
+    oauth2::{AuthorizationCode, EmptyExtraTokenFields, PkceCodeVerifier},
     Socio,
+};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
 };
 
 #[derive(Clone, Debug, Default)]
@@ -39,8 +35,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 pub async fn redirect(State(state): State<AppState>) -> SocioRedirect {
-    let client = get_socio_client();
-    let authorization_request = client.authorize().unwrap();
+    let authorization_request = socio().authorize().unwrap();
 
     let redirect = authorization_request.redirect().unwrap();
 
@@ -56,7 +51,10 @@ pub async fn redirect(State(state): State<AppState>) -> SocioRedirect {
 }
 
 #[axum::debug_handler]
-pub async fn callback(Query(query): Query<SocioCallback>, State(state): State<AppState>) {
+pub async fn callback(
+    Query(query): Query<SocioCallback>,
+    State(state): State<AppState>,
+) -> StatusCode {
     let pkce_verifier = {
         let requests = state.requests.lock().expect("lock poisoned");
 
@@ -70,52 +68,14 @@ pub async fn callback(Query(query): Query<SocioCallback>, State(state): State<Ap
 
     let code = AuthorizationCode::new(query.code);
 
-    let client = get_socio_client();
-    let token = client
+    socio()
         .exchange_code::<EmptyExtraTokenFields>(code, pkce_verifier)
         .await
         .unwrap();
 
-    println!("{:?}", token);
+    StatusCode::OK
 }
 
-pub fn get_socio_client() -> Socio<()> {
-    let config_content = std::fs::read_to_string("config.test.json").unwrap();
-    let config = serde_json::from_str::<serde_json::Value>(&config_content).unwrap();
-
-    fn get_config_string(config: &serde_json::Value, key: &str) -> String {
-        config[key]
-            .as_str()
-            .expect(&format!("The key '{key}' is missing or not a string"))
-            .to_string()
-    }
-
-    fn get_config_string_list(config: &serde_json::Value, key: &str) -> Vec<String> {
-        config[key]
-            .as_array()
-            .expect(&format!("The key '{key}' is missing or not a list"))
-            .iter()
-            .map(|v| v.as_str().unwrap().to_string())
-            .collect()
-    }
-
-    fn get_config_scopes(config: &serde_json::Value, key: &str) -> Vec<Scope> {
-        get_config_string_list(config, key)
-            .into_iter()
-            .map(|s| Scope::new(s))
-            .collect()
-    }
-
-    let config = OAuth2Config {
-        client_id: ClientId::new(get_config_string(&config, "client_id")),
-        client_secret: ClientSecret::new(get_config_string(&config, "client_secret")),
-        authorize_endpoint: AuthUrl::new(get_config_string(&config, "authorize_endpoint")).unwrap(),
-        token_endpoint: TokenUrl::new(get_config_string(&config, "token_endpoint"))
-            .expect("Invalid token endpoint"),
-        scopes: get_config_scopes(&config, "scopes"),
-        redirect_uri: RedirectUrl::new(get_config_string(&config, "redirect_uri"))
-            .expect("Invalid redirect URI"),
-    };
-
-    Socio::new(config, ())
+fn socio() -> Socio<()> {
+    Socio::new(shared::read_config("axum"), ())
 }

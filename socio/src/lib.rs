@@ -78,7 +78,7 @@ impl<T> Socio<T>
 where
     T: SocioAuthorize,
 {
-    pub async fn token(
+    pub async fn exchange_and_claims(
         &self,
         code: AuthorizationCode,
         pkce_verifier: PkceCodeVerifier,

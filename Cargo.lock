@@ -308,6 +308,7 @@ dependencies = [
  "axum",
  "serde",
  "serde_json",
+ "shared",
  "socio",
  "tokio",
 ]
@@ -319,6 +320,7 @@ dependencies = [
  "axum",
  "serde",
  "serde_json",
+ "shared",
  "socio",
  "socio_providers",
  "tokio",
@@ -1410,6 +1412,15 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "shared"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "socio",
 ]
 
 [[package]]
