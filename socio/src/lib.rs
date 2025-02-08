@@ -1,5 +1,6 @@
 pub mod error;
 pub mod integrations;
+pub mod providers;
 pub mod types;
 
 pub use oauth2;
@@ -8,16 +9,18 @@ use oauth2::{
     basic::BasicTokenType, AuthorizationCode, CsrfToken, EmptyExtraTokenFields, ExtraTokenFields,
     PkceCodeVerifier, StandardTokenResponse,
 };
+use providers::SocioAuthorize;
 use types::{AuthorizationRequest, OAuth2Config};
 
 #[derive(Clone, Debug)]
-pub struct Socio {
+pub struct Socio<T> {
     config: OAuth2Config,
+    provider: T,
 }
 
-impl Socio {
-    pub fn new(config: OAuth2Config) -> Self {
-        Socio { config }
+impl<T> Socio<T> {
+    pub fn new(config: OAuth2Config, provider: T) -> Self {
+        Socio { config, provider }
     }
 
     pub fn authorize(&self) -> error::Result<AuthorizationRequest> {
@@ -55,12 +58,27 @@ impl Socio {
             .redirect(reqwest::redirect::Policy::none())
             .build()?;
 
-        let token = client
+        let response = client
             .exchange_code(code)
             .set_pkce_verifier(pkce_verifier)
             .request_async(&http_client)
             .await?;
 
-        Ok(token)
+        Ok(response)
+    }
+}
+
+impl<T> Socio<T>
+where
+    T: SocioAuthorize,
+{
+    pub async fn token(
+        &self,
+        code: AuthorizationCode,
+        pkce_verifier: PkceCodeVerifier,
+    ) -> error::Result<T::Claims> {
+        let response = self.exchange_code::<T::Fields>(code, pkce_verifier).await?;
+        let claims = self.provider.parse_token_response(response).await?;
+        Ok(claims)
     }
 }

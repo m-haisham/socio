@@ -8,6 +8,7 @@ use oauth2::{
     EndpointSet, ExtraTokenFields, PkceCodeVerifier, RedirectUrl, Scope, StandardRevocableToken,
     StandardTokenResponse, TokenUrl,
 };
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::{error, integrations::SocioRedirect};
@@ -28,6 +29,13 @@ pub type CustomClient<
     EndpointNotSet,
     HasTokenUrl,
 >;
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct IdTokenField {
+    pub id_token: String,
+}
+
+impl ExtraTokenFields for IdTokenField {}
 
 #[derive(Clone, Debug)]
 pub struct OAuth2Config {

@@ -19,4 +19,10 @@ pub enum Error {
 
     #[error("CSRF token mismatch")]
     CsrfTokenMismatch,
+
+    #[error(transparent)]
+    JwtError(#[from] jsonwebtoken::errors::Error),
+
+    #[error(transparent)]
+    ProviderError(#[from] Box<dyn std::error::Error + Send + Sync>),
 }

@@ -27,13 +27,11 @@ pub struct AppState {
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let state = AppState::default();
 
-    // build our application with a single route
     let app = Router::new()
         .route("/redirect", get(redirect))
         .route("/callback", get(callback))
         .with_state(state);
 
-    // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     axum::serve(listener, app).await?;
 
@@ -81,7 +79,7 @@ pub async fn callback(Query(query): Query<SocioCallback>, State(state): State<Ap
     println!("{:?}", token);
 }
 
-pub fn get_socio_client() -> Socio {
+pub fn get_socio_client() -> Socio<()> {
     let config_content = std::fs::read_to_string("config.json").unwrap();
     let config = serde_json::from_str::<serde_json::Value>(&config_content).unwrap();
 
@@ -119,5 +117,5 @@ pub fn get_socio_client() -> Socio {
             .expect("Invalid redirect URI"),
     };
 
-    Socio::new(config)
+    Socio::new(config, ())
 }
