@@ -13,7 +13,7 @@ use oauth2::{
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::{error, integrations::AxumRedirect};
+use crate::error;
 
 pub type CustomClient<
     Fields = EmptyExtraTokenFields,
@@ -69,10 +69,16 @@ pub struct AuthorizationRequest {
 }
 
 impl AuthorizationRequest {
-    pub fn redirect(&self) -> error::Result<AxumRedirect> {
+    #[cfg(feature = "axum")]
+    pub fn axum_redirect(&self) -> error::Result<crate::integrations::AxumRedirect> {
         let header_value = HeaderValue::from_str(self.url.as_str())
             .map_err(|e| error::Error::HeaderValueError(e))?;
-        Ok(AxumRedirect::new(header_value))
+        Ok(crate::integrations::AxumRedirect::new(header_value))
+    }
+
+    #[cfg(feature = "rocket")]
+    pub fn rocket_redirect(&self) -> crate::integrations::RocketRedirect {
+        crate::integrations::RocketRedirect::new(self.url.clone())
     }
 }
 

@@ -37,7 +37,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
 pub async fn redirect(State(state): State<AppState>) -> AxumRedirect {
     let authorization_request = socio().authorize().unwrap();
 
-    let redirect = authorization_request.redirect().unwrap();
+    let redirect = authorization_request.axum_redirect().unwrap();
 
     {
         let mut requests = state.requests.lock().expect("lock poisoned");

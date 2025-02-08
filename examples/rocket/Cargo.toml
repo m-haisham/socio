@@ -1,0 +1,12 @@
+[package]
+name = "example-rocket"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rocket = "0.5.1"
+serde = "1.0.217"
+serde_json = "1.0.138"
+socio = { path = "../../socio", features = ["rocket"] }
+shared = { path = "../shared" }
+tokio = { version = "1", features = ["full"] }
