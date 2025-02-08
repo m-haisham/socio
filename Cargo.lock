@@ -282,6 +282,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "example-axum"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "serde",
+ "serde_json",
+ "socio",
+ "tokio",
+]
+
+[[package]]
 name = "fastrand"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1354,17 +1365,6 @@ dependencies = [
  "serde",
  "thiserror 2.0.11",
  "url",
-]
-
-[[package]]
-name = "socio-axum"
-version = "0.1.0"
-dependencies = [
- "axum",
- "serde",
- "serde_json",
- "socio",
- "tokio",
 ]
 
 [[package]]
