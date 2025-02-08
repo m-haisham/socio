@@ -4,7 +4,7 @@ use axum::{
     Json, Router,
 };
 use socio::{
-    integrations::{SocioCallback, SocioRedirect},
+    integrations::{AxumRedirect, SocioCallback},
     oauth2::{AuthorizationCode, PkceCodeVerifier},
     Socio,
 };
@@ -34,7 +34,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub async fn redirect(State(state): State<AppState>) -> SocioRedirect {
+pub async fn redirect(State(state): State<AppState>) -> AxumRedirect {
     let authorization_request = socio().authorize().unwrap();
 
     let redirect = authorization_request.redirect().unwrap();

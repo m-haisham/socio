@@ -13,7 +13,7 @@ use oauth2::{
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::{error, integrations::SocioRedirect};
+use crate::{error, integrations::AxumRedirect};
 
 pub type CustomClient<
     Fields = EmptyExtraTokenFields,
@@ -69,10 +69,10 @@ pub struct AuthorizationRequest {
 }
 
 impl AuthorizationRequest {
-    pub fn redirect(&self) -> error::Result<SocioRedirect> {
+    pub fn redirect(&self) -> error::Result<AxumRedirect> {
         let header_value = HeaderValue::from_str(self.url.as_str())
             .map_err(|e| error::Error::HeaderValueError(e))?;
-        Ok(SocioRedirect::new(header_value))
+        Ok(AxumRedirect::new(header_value))
     }
 }
 

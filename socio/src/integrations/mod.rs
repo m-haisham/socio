@@ -1,30 +1,17 @@
-use http::HeaderValue;
+#[cfg(feature = "axum")]
+mod axum;
+#[cfg(feature = "rocket")]
+mod rocket;
+
 use oauth2::{AuthorizationCode, CsrfToken};
 use serde::Deserialize;
 
 use crate::error;
 
-#[derive(Debug, Clone)]
-pub struct SocioRedirect {
-    url: HeaderValue,
-}
-
-impl SocioRedirect {
-    pub fn new(url: HeaderValue) -> Self {
-        SocioRedirect { url }
-    }
-}
-
 #[cfg(feature = "axum")]
-impl axum_core::response::IntoResponse for SocioRedirect {
-    fn into_response(self) -> axum_core::response::Response {
-        (
-            http::StatusCode::FOUND,
-            [(http::header::LOCATION, self.url)],
-        )
-            .into_response()
-    }
-}
+pub use axum::AxumRedirect;
+#[cfg(feature = "rocket")]
+pub use rocket::RocketRedirect;
 
 #[derive(Deserialize, Debug)]
 pub struct SocioCallback {
