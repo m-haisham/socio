@@ -12,7 +12,7 @@ use oauth2::{
     PkceCodeVerifier, StandardTokenResponse,
 };
 use providers::SocioAuthorize;
-use types::{AuthorizationRequest, OAuth2Config};
+use types::{AuthorizationRequest, OAuth2Config, Response};
 
 #[derive(Clone, Debug)]
 pub struct Socio<T> {
@@ -78,9 +78,9 @@ where
         &self,
         code: AuthorizationCode,
         pkce_verifier: PkceCodeVerifier,
-    ) -> error::Result<T::Claims> {
+    ) -> error::Result<Response<T::Claims>> {
         let response = self.exchange_code::<T::Fields>(code, pkce_verifier).await?;
-        let claims = self.provider.parse_token_response(response).await?;
+        let claims = self.provider.parse_token_response(&response).await?;
         Ok(claims)
     }
 }

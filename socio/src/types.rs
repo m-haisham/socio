@@ -1,12 +1,14 @@
+use std::time::Duration;
+
 use http::HeaderValue;
 use oauth2::{
     basic::{
         BasicErrorResponse, BasicRevocationErrorResponse, BasicTokenIntrospectionResponse,
         BasicTokenType,
     },
-    AuthUrl, Client, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields, EndpointNotSet,
-    EndpointSet, ExtraTokenFields, PkceCodeVerifier, RedirectUrl, Scope, StandardRevocableToken,
-    StandardTokenResponse, TokenUrl,
+    AccessToken, AuthUrl, Client, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields,
+    EndpointNotSet, EndpointSet, ExtraTokenFields, PkceCodeVerifier, RedirectUrl, RefreshToken,
+    Scope, StandardRevocableToken, StandardTokenResponse, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -71,5 +73,29 @@ impl AuthorizationRequest {
         let header_value = HeaderValue::from_str(self.url.as_str())
             .map_err(|e| error::Error::HeaderValueError(e))?;
         Ok(SocioRedirect::new(header_value))
+    }
+}
+
+#[derive(Debug)]
+pub struct Response<Claims> {
+    access_token: AccessToken,
+    refresh_token: Option<RefreshToken>,
+    expires_in: Option<Duration>,
+    scopes: Option<Vec<Scope>>,
+    claims: Claims,
+}
+
+impl<Claims> Response<Claims> {
+    pub fn from_standard_token_response(
+        response: &StandardTokenResponse<IdTokenField, BasicTokenType>,
+        claims: Claims,
+    ) -> Self {
+        Response {
+            access_token: response.access_token().clone(),
+            refresh_token: response.refresh_token().cloned(),
+            expires_in: response.expires_in(),
+            scopes: response.scopes().cloned(),
+            claims,
+        }
     }
 }
