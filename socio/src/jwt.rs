@@ -6,6 +6,7 @@ use crate::error;
 pub async fn verify_jwt_with_jwks_endpoint<T>(
     jwt: &str,
     jwks_endpoint: &str,
+    audience: &str,
 ) -> error::Result<TokenData<T>>
 where
     T: DeserializeOwned,
@@ -25,7 +26,8 @@ where
     })?;
 
     let decoding_key = DecodingKey::from_jwk(jwk)?;
-    let validation = Validation::new(header.alg);
+    let mut validation = Validation::new(header.alg);
+    validation.set_audience(&[audience]);
 
     let token = jsonwebtoken::decode::<T>(jwt, &decoding_key, &validation)?;
 

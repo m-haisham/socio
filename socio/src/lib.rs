@@ -25,6 +25,10 @@ impl<T> Socio<T> {
         Socio { config, provider }
     }
 
+    pub fn config(&self) -> &OAuth2Config {
+        &self.config
+    }
+
     pub fn authorize(&self) -> error::Result<AuthorizationRequest> {
         let client = self
             .config
@@ -80,7 +84,11 @@ where
         pkce_verifier: PkceCodeVerifier,
     ) -> error::Result<Response<T::Claims>> {
         let response = self.exchange_code::<T::Fields>(code, pkce_verifier).await?;
-        let claims = self.provider.parse_token_response(&response).await?;
+        let claims = self
+            .provider
+            .parse_token_response(&self.config, &response)
+            .await?;
+
         Ok(claims)
     }
 }

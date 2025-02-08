@@ -313,6 +313,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "example-google"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "serde",
+ "serde_json",
+ "socio",
+ "socio_providers",
+ "tokio",
+]
+
+[[package]]
 name = "fastrand"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1462,7 +1474,6 @@ name = "socio_providers"
 version = "0.1.0"
 dependencies = [
  "jsonwebtoken",
- "reqwest",
  "serde",
  "socio",
 ]

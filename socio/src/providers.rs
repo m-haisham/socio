@@ -1,4 +1,7 @@
-use crate::{error, types::Response};
+use crate::{
+    error,
+    types::{OAuth2Config, Response},
+};
 use async_trait::async_trait;
 use oauth2::{basic::BasicTokenType, ExtraTokenFields, StandardTokenResponse};
 
@@ -23,6 +26,7 @@ pub trait SocioAuthorize {
 
     async fn parse_token_response(
         &self,
+        config: &OAuth2Config,
         response: &StandardTokenResponse<Self::Fields, BasicTokenType>,
     ) -> error::Result<Response<Self::Claims>>;
 }

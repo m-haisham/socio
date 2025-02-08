@@ -11,12 +11,13 @@ use axum::{
 use socio::{
     integrations::{SocioCallback, SocioRedirect},
     oauth2::{
-        AuthUrl, AuthorizationCode, ClientId, ClientSecret, EmptyExtraTokenFields,
-        PkceCodeVerifier, RedirectUrl, Scope, TokenUrl,
+        AuthUrl, AuthorizationCode, ClientId, ClientSecret, PkceCodeVerifier, RedirectUrl, Scope,
+        TokenUrl,
     },
     types::OAuth2Config,
     Socio,
 };
+use socio_providers::google::Google;
 
 #[derive(Clone, Debug, Default)]
 pub struct AppState {
@@ -71,15 +72,12 @@ pub async fn callback(Query(query): Query<SocioCallback>, State(state): State<Ap
     let code = AuthorizationCode::new(query.code);
 
     let client = get_socio_client();
-    let token = client
-        .exchange_code::<EmptyExtraTokenFields>(code, pkce_verifier)
-        .await
-        .unwrap();
+    let token = client.token(code, pkce_verifier).await.unwrap();
 
     println!("{:?}", token);
 }
 
-pub fn get_socio_client() -> Socio<()> {
+pub fn get_socio_client() -> Socio<Google> {
     let config_content = std::fs::read_to_string("config.test.json").unwrap();
     let config = serde_json::from_str::<serde_json::Value>(&config_content).unwrap();
 
@@ -117,5 +115,5 @@ pub fn get_socio_client() -> Socio<()> {
             .expect("Invalid redirect URI"),
     };
 
-    Socio::new(config, ())
+    Socio::new(config, Google)
 }

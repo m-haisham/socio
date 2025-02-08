@@ -1,10 +1,10 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use socio::{
     async_trait, error,
     jwt::verify_jwt_with_jwks_endpoint,
     oauth2::{basic::BasicTokenType, StandardTokenResponse},
     providers::{GenericClaims, NormalizeClaims, SocioAuthorize},
-    types::{IdTokenField, Response},
+    types::{IdTokenField, OAuth2Config, Response},
 };
 
 #[derive(Debug)]
@@ -17,11 +17,13 @@ impl SocioAuthorize for Google {
 
     async fn parse_token_response(
         &self,
+        config: &OAuth2Config,
         response: &StandardTokenResponse<Self::Fields, BasicTokenType>,
     ) -> error::Result<Response<Self::Claims>> {
         let token = verify_jwt_with_jwks_endpoint::<Self::Claims>(
             &response.extra_fields().id_token,
             "https://www.googleapis.com/oauth2/v3/certs",
+            &config.client_id,
         )
         .await?;
 
@@ -32,7 +34,7 @@ impl SocioAuthorize for Google {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GoogleClaims {
     iss: String,
     aud: String,
@@ -41,7 +43,6 @@ pub struct GoogleClaims {
     email_verified: bool,
     name: String,
     picture: String,
-    locale: String,
 }
 
 impl NormalizeClaims for GoogleClaims {
