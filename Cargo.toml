@@ -1,4 +1,4 @@
 [workspace]
-members = ["socio", "examples/*"]
+members = ["socio", "examples/*", "providers"]
 default-members = ["socio"]
 resolver = "2"

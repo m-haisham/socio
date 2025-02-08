@@ -1,0 +1,7 @@
+[package]
+name = "socio_providers"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+socio = { path = "../socio" }
