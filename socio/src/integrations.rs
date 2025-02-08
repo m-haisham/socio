@@ -1,5 +1,4 @@
-use axum_core::response::IntoResponse;
-use http::{header::LOCATION, HeaderValue, StatusCode};
+use http::HeaderValue;
 use oauth2::{AuthorizationCode, CsrfToken};
 use serde::Deserialize;
 
@@ -16,9 +15,14 @@ impl SocioRedirect {
     }
 }
 
-impl IntoResponse for SocioRedirect {
+#[cfg(feature = "axum")]
+impl axum_core::response::IntoResponse for SocioRedirect {
     fn into_response(self) -> axum_core::response::Response {
-        (StatusCode::FOUND, [(LOCATION, self.url)]).into_response()
+        (
+            http::StatusCode::FOUND,
+            [(http::header::LOCATION, self.url)],
+        )
+            .into_response()
     }
 }
 

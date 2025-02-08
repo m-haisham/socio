@@ -20,6 +20,7 @@ pub enum Error {
     #[error("CSRF token mismatch")]
     CsrfTokenMismatch,
 
+    #[cfg(feature = "jwt")]
     #[error(transparent)]
     JwtError(#[from] jsonwebtoken::errors::Error),
 

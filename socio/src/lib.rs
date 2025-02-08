@@ -1,8 +1,10 @@
 pub mod error;
 pub mod integrations;
-pub mod jwt;
 pub mod providers;
 pub mod types;
+
+#[cfg(feature = "jwt")]
+pub mod jwt;
 
 pub use async_trait::async_trait;
 pub use oauth2;
