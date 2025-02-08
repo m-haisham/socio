@@ -5,3 +5,6 @@ edition = "2021"
 
 [dependencies]
 socio = { path = "../socio" }
+serde.workspace = true
+jsonwebtoken.workspace = true
+reqwest = { workspace = true, features = ["json"] }

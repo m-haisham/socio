@@ -1,9 +1,6 @@
+use crate::error;
 use async_trait::async_trait;
-use jsonwebtoken::{jwk::JwkSet, DecodingKey, Validation};
 use oauth2::{basic::BasicTokenType, ExtraTokenFields, StandardTokenResponse};
-use serde::Deserialize;
-
-use crate::{error, types::IdTokenField};
 
 #[derive(Debug)]
 pub struct GenericClaims {

@@ -7,9 +7,9 @@ edition = "2021"
 async-trait = "0.1.86"
 axum-core = "0.5.0"
 http = "1.2.0"
-jsonwebtoken = "9.3.1"
+jsonwebtoken.workspace = true
 oauth2 = "5.0.0"
-reqwest = { version = "0.12.12", features = ["json"] }
-serde = { version = "1.0.217", features = ["derive"] }
+reqwest.workspace = true
+serde.workspace = true
 thiserror = "2.0.11"
 url = { version = "2.5.4", features = ["serde"] }

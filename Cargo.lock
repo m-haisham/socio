@@ -1460,6 +1460,12 @@ dependencies = [
 [[package]]
 name = "socio_providers"
 version = "0.1.0"
+dependencies = [
+ "jsonwebtoken",
+ "reqwest",
+ "serde",
+ "socio",
+]
 
 [[package]]
 name = "socket2"

@@ -24,5 +24,5 @@ pub enum Error {
     JwtError(#[from] jsonwebtoken::errors::Error),
 
     #[error(transparent)]
-    ProviderError(#[from] Box<dyn std::error::Error + Send + Sync>),
+    Custom(#[from] Box<dyn std::error::Error + Send + Sync>),
 }
