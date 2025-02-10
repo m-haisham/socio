@@ -1,0 +1,13 @@
+[package]
+name = "example-microsoft"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+axum = { version = "0.8.1", features = ["macros"] }
+serde.workspace = true
+serde_json = "1.0.138"
+socio = { path = "../../socio", features = ["axum"] }
+socio_providers = { path = "../../socio_providers" }
+shared = { path = "../shared" }
