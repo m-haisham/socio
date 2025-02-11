@@ -6,9 +6,10 @@ use oauth2::{
         BasicErrorResponse, BasicRevocationErrorResponse, BasicTokenIntrospectionResponse,
         BasicTokenType,
     },
-    AccessToken, AuthUrl, Client, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields,
-    EndpointNotSet, EndpointSet, ExtraTokenFields, PkceCodeVerifier, RedirectUrl, RefreshToken,
-    Scope, StandardRevocableToken, StandardTokenResponse, TokenResponse, TokenUrl,
+    AccessToken, AuthUrl, AuthorizationCode, Client, ClientId, ClientSecret, CsrfToken,
+    EmptyExtraTokenFields, EndpointNotSet, EndpointSet, ExtraTokenFields, PkceCodeVerifier,
+    RedirectUrl, RefreshToken, Scope, StandardRevocableToken, StandardTokenResponse, TokenResponse,
+    TokenUrl,
 };
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -40,7 +41,7 @@ pub struct OpenIdTokenField {
 impl ExtraTokenFields for OpenIdTokenField {}
 
 #[derive(Clone, Debug)]
-pub struct OAuth2Config {
+pub struct SocioClient {
     pub client_id: ClientId,
     pub client_secret: ClientSecret,
     pub authorize_endpoint: AuthUrl,
@@ -49,8 +50,8 @@ pub struct OAuth2Config {
     pub redirect_uri: RedirectUrl,
 }
 
-impl OAuth2Config {
-    pub fn into_custom_client<Fields: ExtraTokenFields>(self) -> CustomClient<Fields> {
+impl SocioClient {
+    pub fn client<Fields: ExtraTokenFields>(self) -> CustomClient<Fields> {
         let client = CustomClient::<Fields, EndpointNotSet, EndpointNotSet>::new(self.client_id)
             .set_client_secret(self.client_secret)
             .set_auth_uri(self.authorize_endpoint)
@@ -58,6 +59,47 @@ impl OAuth2Config {
             .set_redirect_uri(self.redirect_uri);
 
         client
+    }
+
+    pub fn authorize(&self) -> error::Result<AuthorizationRequest> {
+        let client = self.clone().client::<EmptyExtraTokenFields>();
+
+        let csrf_token = CsrfToken::new_random();
+        let (pkce_challenge, pkce_verifier) = oauth2::PkceCodeChallenge::new_random_sha256();
+
+        // TODO: add support for extra params
+        let (url, csrf_token) = client
+            .authorize_url(|| csrf_token.clone())
+            .add_scopes(self.scopes.clone())
+            .set_pkce_challenge(pkce_challenge)
+            .url();
+
+        Ok(AuthorizationRequest {
+            url,
+            csrf_token,
+            pkce_verifier,
+        })
+    }
+
+    pub async fn exchange_code<Fields: ExtraTokenFields>(
+        &self,
+        code: AuthorizationCode,
+        pkce_verifier: PkceCodeVerifier,
+    ) -> error::Result<StandardTokenResponse<Fields, BasicTokenType>> {
+        let client = self.clone().client::<Fields>();
+
+        let http_client = reqwest::ClientBuilder::new()
+            // Following redirects opens the client up to SSRF vulnerabilities.
+            .redirect(reqwest::redirect::Policy::none())
+            .build()?;
+
+        let response = client
+            .exchange_code(code)
+            .set_pkce_verifier(pkce_verifier)
+            .request_async(&http_client)
+            .await?;
+
+        Ok(response)
     }
 }
 

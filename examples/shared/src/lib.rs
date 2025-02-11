@@ -1,14 +1,14 @@
 use socio::{
     oauth2::{AuthUrl, ClientId, ClientSecret, RedirectUrl, Scope, TokenUrl},
-    types::OAuth2Config,
+    types::SocioClient,
 };
 
-pub fn read_config(key: &str) -> OAuth2Config {
+pub fn read_config(key: &str) -> SocioClient {
     let config_content = std::fs::read_to_string("config.test.json").unwrap();
     let config = serde_json::from_str::<serde_json::Value>(&config_content).unwrap();
     let config = &config[key];
 
-    let config = OAuth2Config {
+    let config = SocioClient {
         client_id: ClientId::new(get_config_string(&config, "client_id")),
         client_secret: ClientSecret::new(get_config_string(&config, "client_secret")),
         authorize_endpoint: AuthUrl::new(get_config_string(&config, "authorize_endpoint")).unwrap(),

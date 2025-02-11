@@ -14,28 +14,25 @@ use oauth2::{
     PkceCodeVerifier, StandardTokenResponse,
 };
 use providers::SocioAuthorize;
-use types::{AuthorizationRequest, OAuth2Config, Response};
+use types::{AuthorizationRequest, Response, SocioClient};
 
 #[derive(Clone, Debug)]
 pub struct Socio<T> {
-    config: OAuth2Config,
+    config: SocioClient,
     provider: T,
 }
 
 impl<T> Socio<T> {
-    pub fn new(config: OAuth2Config, provider: T) -> Self {
+    pub fn new(config: SocioClient, provider: T) -> Self {
         Socio { config, provider }
     }
 
-    pub fn config(&self) -> &OAuth2Config {
+    pub fn config(&self) -> &SocioClient {
         &self.config
     }
 
     pub fn authorize(&self) -> error::Result<AuthorizationRequest> {
-        let client = self
-            .config
-            .clone()
-            .into_custom_client::<EmptyExtraTokenFields>();
+        let client = self.config.clone().client::<EmptyExtraTokenFields>();
 
         let csrf_token = CsrfToken::new_random();
 
@@ -59,7 +56,7 @@ impl<T> Socio<T> {
         code: AuthorizationCode,
         pkce_verifier: PkceCodeVerifier,
     ) -> error::Result<StandardTokenResponse<Fields, BasicTokenType>> {
-        let client = self.config.clone().into_custom_client::<Fields>();
+        let client = self.config.clone().client::<Fields>();
 
         let http_client = reqwest::ClientBuilder::new()
             // Following redirects opens the client up to SSRF vulnerabilities.

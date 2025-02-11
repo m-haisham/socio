@@ -4,7 +4,7 @@ use socio::{
     jwt::verify_jwt_with_jwks_endpoint,
     oauth2::{basic::BasicTokenType, StandardTokenResponse},
     providers::{GenericClaims, NormalizeClaims, SocioAuthorize},
-    types::{OpenIdTokenField, OAuth2Config, Response},
+    types::{OpenIdTokenField, Response, SocioClient},
 };
 
 #[derive(Debug)]
@@ -17,7 +17,7 @@ impl SocioAuthorize for Microsoft {
 
     async fn parse_token_response(
         &self,
-        config: &OAuth2Config,
+        config: &SocioClient,
         response: &StandardTokenResponse<Self::Fields, BasicTokenType>,
     ) -> error::Result<Response<Self::Claims>> {
         let token = verify_jwt_with_jwks_endpoint::<Self::Claims>(
