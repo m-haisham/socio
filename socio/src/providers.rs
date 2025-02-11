@@ -4,8 +4,9 @@ use crate::{
 };
 use async_trait::async_trait;
 use oauth2::{basic::BasicTokenType, ExtraTokenFields, StandardTokenResponse};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct GenericClaims {
     pub iss: Option<String>,
     pub aud: Option<String>,
