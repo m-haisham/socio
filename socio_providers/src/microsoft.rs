@@ -4,7 +4,7 @@ use socio::{
     jwt::verify_jwt_with_jwks_endpoint,
     oauth2::{basic::BasicTokenType, StandardTokenResponse},
     providers::{GenericClaims, NormalizeClaims, SocioAuthorize},
-    types::{IdTokenField, OAuth2Config, Response},
+    types::{OpenIdTokenField, OAuth2Config, Response},
 };
 
 #[derive(Debug)]
@@ -12,7 +12,7 @@ pub struct Microsoft;
 
 #[async_trait]
 impl SocioAuthorize for Microsoft {
-    type Fields = IdTokenField;
+    type Fields = OpenIdTokenField;
     type Claims = MicrosoftClaims;
 
     async fn parse_token_response(

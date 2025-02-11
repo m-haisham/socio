@@ -33,11 +33,11 @@ pub type CustomClient<
 >;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct IdTokenField {
+pub struct OpenIdTokenField {
     pub id_token: String,
 }
 
-impl ExtraTokenFields for IdTokenField {}
+impl ExtraTokenFields for OpenIdTokenField {}
 
 #[derive(Clone, Debug)]
 pub struct OAuth2Config {
@@ -94,7 +94,7 @@ pub struct Response<Claims> {
 
 impl<Claims> Response<Claims> {
     pub fn from_standard_token_response(
-        response: &StandardTokenResponse<IdTokenField, BasicTokenType>,
+        response: &StandardTokenResponse<OpenIdTokenField, BasicTokenType>,
         claims: Claims,
     ) -> Self {
         Response {

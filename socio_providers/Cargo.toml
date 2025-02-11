@@ -7,3 +7,4 @@ edition = "2021"
 socio = { path = "../socio" }
 serde.workspace = true
 jsonwebtoken.workspace = true
+serde_json = "1.0.138"
