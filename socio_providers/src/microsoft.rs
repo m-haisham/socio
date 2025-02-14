@@ -9,6 +9,20 @@ use socio::{
 #[derive(Debug)]
 pub struct Microsoft;
 
+impl Microsoft {
+    /// Returns the JWKS URI for Microsoft based on the token endpoint.
+    /// Microsoft has different tenants, so the JWKS URI is based on the token endpoint.
+    pub fn jwks_uri(&self, client: &SocioClient) -> String {
+        client
+            .token_endpoint
+            .strip_suffix("/oauth2/v2.0/token")
+            .map(|base_uri| format!("{}/discovery/v2.0/keys", base_uri))
+            .unwrap_or_else(|| {
+                "https://login.microsoftonline.com/common/discovery/v2.0/keys".to_string()
+            })
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MicrosoftUser {
     iss: String,
@@ -50,7 +64,7 @@ impl UserAwareSocioProvider for Microsoft {
 
         let token = verify_jwt_with_jwks_endpoint::<Self::User>(
             &response.extra_fields().id_token,
-            "https://login.microsoftonline.com/common/discovery/v2.0/keys",
+            &self.jwks_uri(&client),
             &client.client_id,
         )
         .await?;
