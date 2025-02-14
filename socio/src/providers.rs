@@ -38,7 +38,8 @@ impl<T: SocioProvider + Sync + ?Sized> SocioProvider for Box<T> {
         code: AuthorizationCode,
         pkce_verifier: PkceCodeVerifier,
     ) -> error::Result<Response<StandardUser>> {
-        self.exchange_code_standard(client, code, pkce_verifier)
+        self.as_ref()
+            .exchange_code_standard(client, code, pkce_verifier)
             .await
     }
 }
