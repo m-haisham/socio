@@ -2,28 +2,57 @@ use serde::{Deserialize, Serialize};
 use socio::{
     async_trait, error,
     jwt::verify_jwt_with_jwks_endpoint,
-    oauth2::{basic::BasicTokenType, StandardTokenResponse},
-    providers::{GenericClaims, NormalizeClaims, SocioAuthorize},
-    types::{OpenIdTokenField, SocioClient, Response},
+    providers::{SocioProvider, StandardUser, UserAwareSocioProvider},
+    types::{OpenIdTokenField, Response, SocioClient},
 };
 
 #[derive(Debug)]
 pub struct Google;
 
-#[async_trait]
-impl SocioAuthorize for Google {
-    type Fields = OpenIdTokenField;
-    type Claims = GoogleClaims;
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GoogleUser {
+    iss: String,
+    aud: String,
+    sub: String,
+    email: Option<String>,
+    email_verified: Option<bool>,
+    name: Option<String>,
+    picture: Option<String>,
+}
 
-    async fn parse_token_response(
+#[async_trait]
+impl SocioProvider for Google {
+    async fn exchange_code_standard(
         &self,
-        config: &SocioClient,
-        response: &StandardTokenResponse<Self::Fields, BasicTokenType>,
-    ) -> error::Result<Response<Self::Claims>> {
-        let token = verify_jwt_with_jwks_endpoint::<Self::Claims>(
+        client: &SocioClient,
+        code: socio::oauth2::AuthorizationCode,
+        pkce_verifier: socio::oauth2::PkceCodeVerifier,
+    ) -> error::Result<Response<StandardUser>> {
+        Ok(self
+            .exchange_code_for_user(client, code, pkce_verifier)
+            .await?
+            .standardize())
+    }
+}
+
+#[async_trait]
+impl UserAwareSocioProvider for Google {
+    type User = GoogleUser;
+
+    async fn exchange_code_for_user(
+        &self,
+        client: &SocioClient,
+        code: socio::oauth2::AuthorizationCode,
+        pkce_verifier: socio::oauth2::PkceCodeVerifier,
+    ) -> error::Result<Response<Self::User>> {
+        let response = client
+            .exchange_code::<OpenIdTokenField>(code, pkce_verifier)
+            .await?;
+
+        let token = verify_jwt_with_jwks_endpoint::<GoogleUser>(
             &response.extra_fields().id_token,
             "https://www.googleapis.com/oauth2/v3/certs",
-            &config.client_id,
+            &client.client_id,
         )
         .await?;
 
@@ -34,26 +63,13 @@ impl SocioAuthorize for Google {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct GoogleClaims {
-    iss: String,
-    aud: String,
-    sub: String,
-    email: String,
-    email_verified: bool,
-    name: String,
-    picture: String,
-}
-
-impl NormalizeClaims for GoogleClaims {
-    fn normalize_claims(self) -> Option<GenericClaims> {
-        Some(GenericClaims {
-            id: self.sub.clone(),
-            name: Some(self.name),
-            email: Some(self.email.clone()),
-            picture: Some(self.picture),
-            iss: Some(self.iss),
-            aud: Some(self.aud),
-        })
+impl From<GoogleUser> for StandardUser {
+    fn from(value: GoogleUser) -> Self {
+        StandardUser {
+            id: value.sub,
+            name: value.name,
+            email: value.email,
+            picture: value.picture,
+        }
     }
 }

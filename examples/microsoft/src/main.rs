@@ -8,7 +8,7 @@ use socio::{
     oauth2::{AuthorizationCode, PkceCodeVerifier},
     Socio,
 };
-use socio_providers::microsoft::{Microsoft, MicrosoftClaims};
+use socio_providers::microsoft::{Microsoft, MicrosoftUser};
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
@@ -54,7 +54,7 @@ pub async fn redirect(State(state): State<AppState>) -> AxumRedirect {
 pub async fn callback(
     Query(query): Query<SocioCallback>,
     State(state): State<AppState>,
-) -> Json<MicrosoftClaims> {
+) -> Json<MicrosoftUser> {
     let pkce_verifier: PkceCodeVerifier = {
         let requests = state.requests.lock().expect("lock poisoned");
 
@@ -69,11 +69,11 @@ pub async fn callback(
     let code = AuthorizationCode::new(query.code);
 
     let token = socio()
-        .exchange_and_claims(code, pkce_verifier)
+        .exchange_code_for_user(code, pkce_verifier)
         .await
         .unwrap();
 
-    Json(token.claims)
+    Json(token.user)
 }
 
 fn socio() -> Socio<Microsoft> {

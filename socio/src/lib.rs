@@ -10,10 +10,10 @@ pub use async_trait::async_trait;
 pub use oauth2;
 
 use oauth2::{
-    basic::BasicTokenType, AuthorizationCode, CsrfToken, EmptyExtraTokenFields, ExtraTokenFields,
-    PkceCodeVerifier, StandardTokenResponse,
+    basic::BasicTokenType, AuthorizationCode, ExtraTokenFields, PkceCodeVerifier,
+    StandardTokenResponse,
 };
-use providers::SocioAuthorize;
+use providers::{SocioProvider, UserAwareSocioProvider};
 use types::{AuthorizationRequest, Response, SocioClient};
 
 #[derive(Clone, Debug)]
@@ -27,28 +27,16 @@ impl<T> Socio<T> {
         Socio { config, provider }
     }
 
-    pub fn config(&self) -> &SocioClient {
+    pub fn client(&self) -> &SocioClient {
         &self.config
     }
 
+    pub fn provider(&self) -> &T {
+        &self.provider
+    }
+
     pub fn authorize(&self) -> error::Result<AuthorizationRequest> {
-        let client = self.config.clone().client::<EmptyExtraTokenFields>();
-
-        let csrf_token = CsrfToken::new_random();
-
-        let (pkce_challenge, pkce_verifier) = oauth2::PkceCodeChallenge::new_random_sha256();
-
-        let (url, csrf_token) = client
-            .authorize_url(|| csrf_token.clone())
-            .add_scopes(self.config.scopes.clone())
-            .set_pkce_challenge(pkce_challenge)
-            .url();
-
-        Ok(AuthorizationRequest {
-            url,
-            csrf_token,
-            pkce_verifier,
-        })
+        self.client().authorize()
     }
 
     pub async fn exchange_code<Fields: ExtraTokenFields>(
@@ -56,38 +44,36 @@ impl<T> Socio<T> {
         code: AuthorizationCode,
         pkce_verifier: PkceCodeVerifier,
     ) -> error::Result<StandardTokenResponse<Fields, BasicTokenType>> {
-        let client = self.config.clone().client::<Fields>();
-
-        let http_client = reqwest::ClientBuilder::new()
-            // Following redirects opens the client up to SSRF vulnerabilities.
-            .redirect(reqwest::redirect::Policy::none())
-            .build()?;
-
-        let response = client
-            .exchange_code(code)
-            .set_pkce_verifier(pkce_verifier)
-            .request_async(&http_client)
-            .await?;
-
-        Ok(response)
+        self.client().exchange_code(code, pkce_verifier).await
     }
 }
 
 impl<T> Socio<T>
 where
-    T: SocioAuthorize,
+    T: SocioProvider,
 {
-    pub async fn exchange_and_claims(
+    pub async fn exchange_code_standard(
         &self,
         code: AuthorizationCode,
         pkce_verifier: PkceCodeVerifier,
-    ) -> error::Result<Response<T::Claims>> {
-        let response = self.exchange_code::<T::Fields>(code, pkce_verifier).await?;
-        let claims = self
-            .provider
-            .parse_token_response(&self.config, &response)
-            .await?;
+    ) -> error::Result<Response<providers::StandardUser>> {
+        self.provider
+            .exchange_code_standard(self.client(), code, pkce_verifier)
+            .await
+    }
+}
 
-        Ok(claims)
+impl<T> Socio<T>
+where
+    T: UserAwareSocioProvider,
+{
+    pub async fn exchange_code_for_user(
+        &self,
+        code: AuthorizationCode,
+        pkce_verifier: PkceCodeVerifier,
+    ) -> error::Result<Response<T::User>> {
+        self.provider
+            .exchange_code_for_user(self.client(), code, pkce_verifier)
+            .await
     }
 }

@@ -7,7 +7,7 @@ use axum::{
 use socio::{
     integrations::{AxumRedirect, SocioCallback},
     oauth2::{AuthorizationCode, PkceCodeVerifier},
-    providers::{GenericClaims, NormalizeClaims},
+    providers::{Dynamic, StandardUser},
     Socio,
 };
 use socio_providers::{google::Google, microsoft::Microsoft};
@@ -19,11 +19,6 @@ use std::{
 #[derive(Clone, Debug, Default)]
 pub struct AppState {
     requests: Arc<Mutex<HashMap<String, (String, String)>>>,
-}
-
-enum Provider {
-    Google(Socio<Google>),
-    Microsoft(Socio<Microsoft>),
 }
 
 #[tokio::main]
@@ -62,16 +57,9 @@ pub async fn home() -> Html<&'static str> {
 }
 
 pub async fn redirect(State(state): State<AppState>, Path(key): Path<String>) -> AxumRedirect {
-    let provider = match key.as_str() {
-        "google" => socio_google(),
-        "microsoft" => socio_microsoft(),
-        _ => unreachable!(),
-    };
-
-    let authorization_request = match provider {
-        Provider::Google(socio) => socio.authorize().unwrap(),
-        Provider::Microsoft(socio) => socio.authorize().unwrap(),
-    };
+    let authorization_request = socio(key.as_str())
+        .authorize()
+        .expect("Failed to authorize");
 
     let redirect = authorization_request.axum_redirect().unwrap();
 
@@ -90,7 +78,7 @@ pub async fn redirect(State(state): State<AppState>, Path(key): Path<String>) ->
 pub async fn callback(
     Query(query): Query<SocioCallback>,
     State(state): State<AppState>,
-) -> Json<GenericClaims> {
+) -> Json<StandardUser> {
     let (key, pkce_verifier) = {
         let requests = state.requests.lock().expect("lock poisoned");
 
@@ -103,34 +91,18 @@ pub async fn callback(
 
     let code = AuthorizationCode::new(query.code);
 
-    let provider = match key.as_str() {
-        "google" => socio_google(),
-        "microsoft" => socio_microsoft(),
-        _ => unreachable!(),
-    };
+    let response = socio(key.as_str())
+        .exchange_code_standard(code, pkce_verifier)
+        .await
+        .expect("Failed to exchange code");
 
-    let claims = match provider {
-        Provider::Google(socio) => socio
-            .exchange_and_claims(code, pkce_verifier)
-            .await
-            .unwrap()
-            .claims
-            .normalize_claims(),
-        Provider::Microsoft(socio) => socio
-            .exchange_and_claims(code, pkce_verifier)
-            .await
-            .unwrap()
-            .claims
-            .normalize_claims(),
-    };
-
-    Json(claims.unwrap())
+    Json(response.user)
 }
 
-fn socio_google() -> Provider {
-    Provider::Google(Socio::new(shared::read_config("google"), Google))
-}
-
-fn socio_microsoft() -> Provider {
-    Provider::Microsoft(Socio::new(shared::read_config("microsoft"), Microsoft))
+fn socio(key: &str) -> Socio<Dynamic> {
+    match key {
+        "google" => Socio::new(shared::read_config("google"), Box::new(Google)),
+        "microsoft" => Socio::new(shared::read_config("microsoft"), Box::new(Microsoft)),
+        _ => panic!("Unknown key"),
+    }
 }

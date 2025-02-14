@@ -14,7 +14,7 @@ use oauth2::{
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::error;
+use crate::{error, providers::StandardUser};
 
 pub type CustomClient<
     Fields = EmptyExtraTokenFields,
@@ -131,7 +131,7 @@ pub struct Response<Claims> {
     pub refresh_token: Option<RefreshToken>,
     pub expires_in: Option<Duration>,
     pub scopes: Option<Vec<Scope>>,
-    pub claims: Claims,
+    pub user: Claims,
 }
 
 impl<Claims> Response<Claims> {
@@ -145,7 +145,20 @@ impl<Claims> Response<Claims> {
             refresh_token: response.refresh_token().cloned(),
             expires_in: response.expires_in(),
             scopes: response.scopes().cloned(),
-            claims,
+            user: claims,
+        }
+    }
+}
+
+impl<T: Into<StandardUser>> Response<T> {
+    pub fn standardize(self) -> Response<StandardUser> {
+        Response {
+            access_token: self.access_token,
+            token_type: self.token_type,
+            refresh_token: self.refresh_token,
+            expires_in: self.expires_in,
+            scopes: self.scopes,
+            user: self.user.into(),
         }
     }
 }

@@ -3,62 +3,54 @@ use crate::{
     types::{AuthorizationRequest, Response, SocioClient},
 };
 use async_trait::async_trait;
-use oauth2::{
-    basic::BasicTokenType, AuthorizationCode, ExtraTokenFields, PkceCodeVerifier,
-    StandardTokenResponse,
-};
+use oauth2::{AuthorizationCode, PkceCodeVerifier};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize)]
-pub struct GenericClaims {
-    pub iss: Option<String>,
-    pub aud: Option<String>,
+pub type Dynamic = Box<dyn SocioProvider + Sync + Send>;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StandardUser {
     pub id: String,
     pub name: Option<String>,
     pub email: Option<String>,
     pub picture: Option<String>,
 }
 
-pub trait NormalizeClaims {
-    fn normalize_claims(self) -> Option<GenericClaims>;
-}
-
 #[async_trait]
-pub trait SocioAuthorize {
-    type Fields: ExtraTokenFields;
-    type Claims: NormalizeClaims;
-
-    async fn parse_token_response(
-        &self,
-        config: &SocioClient,
-        response: &StandardTokenResponse<Self::Fields, BasicTokenType>,
-    ) -> error::Result<Response<Self::Claims>>;
-}
-
-trait SocioProvider {
+pub trait SocioProvider {
     fn authorize(&self, client: &SocioClient) -> error::Result<AuthorizationRequest> {
         client.authorize()
     }
 
-    async fn exchange_code<Claims>(
+    async fn exchange_code_standard(
         &self,
+        client: &SocioClient,
         code: AuthorizationCode,
         pkce_verifier: PkceCodeVerifier,
-    ) -> error::Result<Response<Claims>>;
-
-    async fn exchange_code_generic(
-        &self,
-        code: AuthorizationCode,
-        pkce_verifier: PkceCodeVerifier,
-    ) -> error::Result<Response<GenericClaims>>;
+    ) -> error::Result<Response<StandardUser>>;
 }
 
-trait TypedSocioProvider {
-    type Claims: NormalizeClaims;
-
-    async fn exchange_code_typed(
+#[async_trait]
+impl<T: SocioProvider + Sync + ?Sized> SocioProvider for Box<T> {
+    async fn exchange_code_standard(
         &self,
+        client: &SocioClient,
         code: AuthorizationCode,
         pkce_verifier: PkceCodeVerifier,
-    ) -> error::Result<Response<Self::Claims>>;
+    ) -> error::Result<Response<StandardUser>> {
+        self.exchange_code_standard(client, code, pkce_verifier)
+            .await
+    }
+}
+
+#[async_trait]
+pub trait UserAwareSocioProvider: SocioProvider {
+    type User;
+
+    async fn exchange_code_for_user(
+        &self,
+        client: &SocioClient,
+        code: AuthorizationCode,
+        pkce_verifier: PkceCodeVerifier,
+    ) -> error::Result<Response<Self::User>>;
 }
