@@ -97,7 +97,10 @@ impl From<GoogleConfig> for SocioClient {
                 .expect("Invalid authorization endpoint URL"), // SAFETY: This is safe because the URL is valid
             token_endpoint: TokenUrl::new(GOOGLE_TOKEN_URL.to_string())
                 .expect("Invalid token endpoint URL"), // SAFETY: This is safe because the URL is valid
-            scopes: vec![Scope::new("openid".to_string())],
+            scopes: ["openid", "profile", "email"]
+                .iter()
+                .map(|s| Scope::new(s.to_string()))
+                .collect(),
         }
     }
 }
