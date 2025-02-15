@@ -5,18 +5,19 @@ use socio::{
     providers::{SocioProvider, StandardUser},
     types::{OpenIdTokenField, Response, SocioClient},
 };
+use url::Url;
 
 #[derive(Clone, Debug)]
 pub struct OpenId {
-    pub jwks_uri: String,
+    pub jwks_url: Url,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OpenIdClaims(serde_json::Value);
 
 impl OpenId {
-    pub fn new(jwks_uri: String) -> Self {
-        Self { jwks_uri }
+    pub fn new(jwks_url: Url) -> Self {
+        Self { jwks_url }
     }
 }
 
@@ -34,7 +35,7 @@ impl SocioProvider for OpenId {
 
         let token = verify_jwt_with_jwks_endpoint::<StandardUser>(
             &response.extra_fields().id_token,
-            &self.jwks_uri,
+            &self.jwks_url.as_str(),
             &client.client_id,
         )
         .await?;
