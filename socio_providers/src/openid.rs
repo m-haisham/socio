@@ -6,7 +6,7 @@ use socio::{
     types::{OpenIdTokenField, Response, SocioClient},
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct OpenId {
     pub jwks_uri: String,
 }

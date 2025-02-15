@@ -8,7 +8,7 @@ use socio::{
     Socio,
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Microsoft;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -87,7 +87,7 @@ impl From<MicrosoftUser> for StandardUser {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MicrosoftConfig {
     pub client_id: ClientId,
     pub client_secret: ClientSecret,
@@ -118,7 +118,7 @@ impl From<MicrosoftConfig> for Socio<Microsoft> {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 #[serde(untagged, rename_all = "snake_case")]
 pub enum TenantType {
     #[default]

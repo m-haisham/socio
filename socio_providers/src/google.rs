@@ -12,7 +12,7 @@ const GOOGLE_JWKS_ENDPOINT: &str = "https://www.googleapis.com/oauth2/v3/certs";
 const GOOGLE_AUTH_URL: &str = "https://accounts.google.com/o/oauth2/auth";
 const GOOGLE_TOKEN_URL: &str = "https://accounts.google.com/o/oauth2/token";
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Google;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -80,7 +80,7 @@ impl From<GoogleUser> for StandardUser {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GoogleConfig {
     pub client_id: ClientId,
     pub client_secret: ClientSecret,

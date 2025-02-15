@@ -50,6 +50,15 @@ impl<T> Socio<T> {
 
 impl<T> Socio<T>
 where
+    T: SocioProvider + Send + Sync + 'static,
+{
+    pub fn into_dynamic(self) -> Socio<providers::Dynamic> {
+        Socio::new(self.config, Box::new(self.provider))
+    }
+}
+
+impl<T> Socio<T>
+where
     T: SocioProvider,
 {
     pub async fn exchange_code_standard(
