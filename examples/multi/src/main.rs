@@ -1,14 +1,14 @@
 use axum::{
+    Json, Router,
     extract::{Path, Query, State},
     response::Html,
     routing::get,
-    Json, Router,
 };
 use socio::{
-    integrations::{AxumRedirect, SocioCallback},
+    Socio,
+    integrations::{Callback, axum::Redirect},
     oauth2::{AuthorizationCode, PkceCodeVerifier},
     providers::{Dynamic, StandardUser},
-    Socio,
 };
 use socio_providers::{google::Google, microsoft::Microsoft};
 use std::{
@@ -56,12 +56,12 @@ pub async fn home() -> Html<&'static str> {
     )
 }
 
-pub async fn redirect(State(state): State<AppState>, Path(key): Path<String>) -> AxumRedirect {
+pub async fn redirect(State(state): State<AppState>, Path(key): Path<String>) -> Redirect {
     let authorization_request = socio(key.as_str())
         .authorize()
         .expect("Failed to authorize");
 
-    let redirect = authorization_request.axum_redirect().unwrap();
+    let redirect = authorization_request.redirect_axum().unwrap();
 
     {
         let mut requests = state.requests.lock().expect("lock poisoned");
@@ -76,7 +76,7 @@ pub async fn redirect(State(state): State<AppState>, Path(key): Path<String>) ->
 
 #[axum::debug_handler]
 pub async fn callback(
-    Query(query): Query<SocioCallback>,
+    Query(query): Query<Callback>,
     State(state): State<AppState>,
 ) -> Json<StandardUser> {
     let (key, pkce_verifier) = {

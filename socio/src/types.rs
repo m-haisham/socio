@@ -2,14 +2,14 @@ use std::time::Duration;
 
 use http::HeaderValue;
 use oauth2::{
-    basic::{
-        BasicErrorResponse, BasicRevocationErrorResponse, BasicTokenIntrospectionResponse,
-        BasicTokenType,
-    },
     AccessToken, AuthUrl, AuthorizationCode, Client, ClientId, ClientSecret, CsrfToken,
     EmptyExtraTokenFields, EndpointNotSet, EndpointSet, ExtraTokenFields, PkceCodeVerifier,
     RedirectUrl, RefreshToken, Scope, StandardRevocableToken, StandardTokenResponse, TokenResponse,
     TokenUrl,
+    basic::{
+        BasicErrorResponse, BasicRevocationErrorResponse, BasicTokenIntrospectionResponse,
+        BasicTokenType,
+    },
 };
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -112,15 +112,15 @@ pub struct AuthorizationRequest {
 
 impl AuthorizationRequest {
     #[cfg(feature = "axum")]
-    pub fn axum_redirect(&self) -> error::Result<crate::integrations::AxumRedirect> {
+    pub fn redirect_axum(&self) -> error::Result<crate::integrations::axum::Redirect> {
         let header_value = HeaderValue::from_str(self.url.as_str())
             .map_err(|e| error::Error::HeaderValueError(e))?;
-        Ok(crate::integrations::AxumRedirect::new(header_value))
+        Ok(crate::integrations::axum::Redirect::new(header_value))
     }
 
     #[cfg(feature = "rocket")]
-    pub fn rocket_redirect(&self) -> crate::integrations::RocketRedirect {
-        crate::integrations::RocketRedirect::new(self.url.clone())
+    pub fn redirect_rocket(&self) -> crate::integrations::rocket::Redirect {
+        crate::integrations::rocket::Redirect::new(self.url.clone())
     }
 }
 

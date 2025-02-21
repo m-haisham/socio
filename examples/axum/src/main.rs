@@ -1,13 +1,13 @@
 use axum::{
+    Router,
     extract::{Query, State},
     http::StatusCode,
     routing::get,
-    Router,
 };
 use socio::{
-    integrations::{AxumRedirect, SocioCallback},
-    oauth2::{AuthorizationCode, EmptyExtraTokenFields, PkceCodeVerifier},
     Socio,
+    integrations::{Callback, axum::Redirect},
+    oauth2::{AuthorizationCode, EmptyExtraTokenFields, PkceCodeVerifier},
 };
 use std::{
     collections::HashMap,
@@ -34,10 +34,10 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub async fn redirect(State(state): State<AppState>) -> AxumRedirect {
+pub async fn redirect(State(state): State<AppState>) -> Redirect {
     let authorization_request = socio().authorize().unwrap();
 
-    let redirect = authorization_request.axum_redirect().unwrap();
+    let redirect = authorization_request.redirect_axum().unwrap();
 
     {
         let mut requests = state.requests.lock().expect("lock poisoned");
@@ -51,10 +51,7 @@ pub async fn redirect(State(state): State<AppState>) -> AxumRedirect {
 }
 
 #[axum::debug_handler]
-pub async fn callback(
-    Query(query): Query<SocioCallback>,
-    State(state): State<AppState>,
-) -> StatusCode {
+pub async fn callback(Query(query): Query<Callback>, State(state): State<AppState>) -> StatusCode {
     let pkce_verifier = {
         let requests = state.requests.lock().expect("lock poisoned");
 

@@ -1,12 +1,12 @@
 use axum::{
+    Json, Router,
     extract::{Query, State},
     routing::get,
-    Json, Router,
 };
 use socio::{
-    integrations::{AxumRedirect, SocioCallback},
-    oauth2::{AuthorizationCode, PkceCodeVerifier},
     Socio,
+    integrations::{Callback, axum::Redirect},
+    oauth2::{AuthorizationCode, PkceCodeVerifier},
 };
 use socio_providers::facebook::{Facebook, FacebookUser};
 use std::{
@@ -34,10 +34,10 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub async fn redirect(State(state): State<AppState>) -> AxumRedirect {
+pub async fn redirect(State(state): State<AppState>) -> Redirect {
     let authorization_request = socio().authorize().unwrap();
 
-    let redirect = authorization_request.axum_redirect().unwrap();
+    let redirect = authorization_request.redirect_axum().unwrap();
 
     {
         let mut requests = state.requests.lock().expect("lock poisoned");
@@ -52,7 +52,7 @@ pub async fn redirect(State(state): State<AppState>) -> AxumRedirect {
 
 #[axum::debug_handler]
 pub async fn callback(
-    Query(query): Query<SocioCallback>,
+    Query(query): Query<Callback>,
     State(state): State<AppState>,
 ) -> Json<FacebookUser> {
     let pkce_verifier = {

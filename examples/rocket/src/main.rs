@@ -2,11 +2,11 @@
 
 use std::{collections::HashMap, sync::Mutex};
 
-use rocket::{get, http::Status, launch, routes, State};
+use rocket::{State, get, http::Status, launch, routes};
 use socio::{
-    integrations::RocketRedirect,
-    oauth2::{AuthorizationCode, EmptyExtraTokenFields, PkceCodeVerifier},
     Socio,
+    integrations::rocket::Redirect,
+    oauth2::{AuthorizationCode, EmptyExtraTokenFields, PkceCodeVerifier},
 };
 
 #[launch]
@@ -20,7 +20,7 @@ fn rocket() -> _ {
 }
 
 #[get("/redirect")]
-async fn redirect(requests: &State<Mutex<HashMap<String, String>>>) -> RocketRedirect {
+async fn redirect(requests: &State<Mutex<HashMap<String, String>>>) -> Redirect {
     let authorization_request = socio().authorize().unwrap();
 
     {
@@ -31,7 +31,7 @@ async fn redirect(requests: &State<Mutex<HashMap<String, String>>>) -> RocketRed
         );
     }
 
-    RocketRedirect::new(authorization_request.url)
+    Redirect::new(authorization_request.url)
 }
 
 #[get("/callback?<code>&<state>")]

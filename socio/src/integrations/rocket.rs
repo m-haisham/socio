@@ -3,17 +3,17 @@ use std::convert::Infallible;
 use url::Url;
 
 #[derive(Debug, Clone)]
-pub struct RocketRedirect {
+pub struct Redirect {
     url: Url,
 }
 
-impl RocketRedirect {
+impl Redirect {
     pub fn new(url: Url) -> Self {
-        RocketRedirect { url }
+        Redirect { url }
     }
 }
 
-impl<'r> rocket::response::Responder<'r, 'static> for RocketRedirect {
+impl<'r> rocket::response::Responder<'r, 'static> for Redirect {
     fn respond_to(self, _: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
         rocket::response::Response::build()
             .status(rocket::http::Status::Found)
@@ -22,10 +22,10 @@ impl<'r> rocket::response::Responder<'r, 'static> for RocketRedirect {
     }
 }
 
-impl TryFrom<AuthorizationRequest> for RocketRedirect {
+impl TryFrom<AuthorizationRequest> for Redirect {
     type Error = Infallible;
 
     fn try_from(value: AuthorizationRequest) -> Result<Self, Self::Error> {
-        Ok(RocketRedirect::new(value.url))
+        Ok(Redirect::new(value.url))
     }
 }
