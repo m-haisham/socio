@@ -3,6 +3,9 @@ members = ["socio", "socio_providers", "examples/*"]
 default-members = ["socio"]
 resolver = "2"
 
+[workspace.package]
+edition = "2024"
+
 [workspace.dependencies]
 serde = { version = "1.0.217", features = ["derive"] }
 jsonwebtoken = "9.3.1"
