@@ -6,10 +6,7 @@ use socio::{
     providers::{SocioProvider, StandardUser, UserAwareSocioProvider},
     types::{OpenIdTokenField, Response, SocioClient},
 };
-
-const FACEBOOK_JWKS_ENDPOINT: &str = "https://www.facebook.com/.well-known/oauth/openid/jwks";
-const FACEBOOK_AUTH_URL: &str = "https://www.facebook.com/v22.0/dialog/oauth";
-const FACEBOOK_TOKEN_URL: &str = "https://graph.facebook.com/v22.0/oauth/access_token";
+use url_macro::url;
 
 #[derive(Clone, Debug)]
 pub struct Facebook;
@@ -57,7 +54,7 @@ impl UserAwareSocioProvider for Facebook {
 
         let token = verify_jwt_with_jwks_endpoint::<FacebookUser>(
             &response.extra_fields().id_token,
-            FACEBOOK_JWKS_ENDPOINT,
+            "https://www.facebook.com/.well-known/oauth/openid/jwks",
             &client.client_id,
         )
         .await?;
@@ -89,14 +86,15 @@ pub struct FacebookConfig {
 
 impl From<FacebookConfig> for SocioClient {
     fn from(value: FacebookConfig) -> Self {
+        let auth_url = url!("https://www.facebook.com/v22.0/dialog/oauth");
+        let token_url = url!("https://graph.facebook.com/v22.0/oauth/access_token");
+
         SocioClient {
             client_id: value.client_id,
             client_secret: value.client_secret,
             redirect_uri: value.redirect_url,
-            authorize_endpoint: AuthUrl::new(FACEBOOK_AUTH_URL.to_string())
-                .expect("Invalid authorization endpoint URL"), // SAFETY: This is safe because the URL is valid
-            token_endpoint: TokenUrl::new(FACEBOOK_TOKEN_URL.to_string())
-                .expect("Invalid token endpoint URL"), // SAFETY: This is safe because the URL is valid
+            authorize_endpoint: AuthUrl::from_url(auth_url),
+            token_endpoint: TokenUrl::from_url(token_url),
             scopes: ["openid", "profile", "email"]
                 .iter()
                 .map(|s| Scope::new(s.to_string()))
@@ -108,28 +106,5 @@ impl From<FacebookConfig> for SocioClient {
 impl From<FacebookConfig> for Socio<Facebook> {
     fn from(value: FacebookConfig) -> Self {
         Socio::new(value.into(), Facebook)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use socio::oauth2::{AuthUrl, TokenUrl};
-
-    use super::*;
-
-    #[test]
-    fn test_auth_url() {
-        assert!(
-            AuthUrl::new(FACEBOOK_AUTH_URL.to_string()).is_ok(),
-            "Invalid authorization endpoint URL"
-        );
-    }
-
-    #[test]
-    fn test_token_url() {
-        assert!(
-            TokenUrl::new(FACEBOOK_TOKEN_URL.to_string()).is_ok(),
-            "Invalid token endpoint URL"
-        );
     }
 }

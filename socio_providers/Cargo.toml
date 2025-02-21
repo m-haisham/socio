@@ -9,3 +9,4 @@ serde.workspace = true
 jsonwebtoken.workspace = true
 serde_json = "1.0.138"
 url.workspace = true
+url-macro = "0.1.12"

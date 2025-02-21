@@ -2083,6 +2083,7 @@ dependencies = [
  "serde_json",
  "socio",
  "url",
+ "url-macro",
 ]
 
 [[package]]
@@ -2559,6 +2560,15 @@ dependencies = [
  "idna",
  "percent-encoding",
  "serde",
+]
+
+[[package]]
+name = "url-macro"
+version = "0.1.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2fe4fa5b0e141b09e32aabc533d5282c920214ced5be01a81d57b9f97f4259b5"
+dependencies = [
+ "url",
 ]
 
 [[package]]
