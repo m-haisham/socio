@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use http::HeaderValue;
 use oauth2::{
     AccessToken, AuthUrl, AuthorizationCode, Client, ClientId, ClientSecret, CsrfToken,
     EmptyExtraTokenFields, EndpointNotSet, EndpointSet, ExtraTokenFields, PkceCodeVerifier,
@@ -113,7 +112,7 @@ pub struct AuthorizationRequest {
 impl AuthorizationRequest {
     #[cfg(feature = "axum")]
     pub fn redirect_axum(&self) -> error::Result<crate::integrations::axum::Redirect> {
-        let header_value = HeaderValue::from_str(self.url.as_str())
+        let header_value = http::HeaderValue::from_str(self.url.as_str())
             .map_err(|e| error::Error::HeaderValueError(e))?;
         Ok(crate::integrations::axum::Redirect::new(header_value))
     }
@@ -121,6 +120,11 @@ impl AuthorizationRequest {
     #[cfg(feature = "rocket")]
     pub fn redirect_rocket(&self) -> crate::integrations::rocket::Redirect {
         crate::integrations::rocket::Redirect::new(self.url.clone())
+    }
+
+    #[cfg(feature = "actix")]
+    pub fn redirect_actix(&self) -> crate::integrations::actix::Redirect {
+        crate::integrations::actix::Redirect::new(self.url.to_string())
     }
 }
 
