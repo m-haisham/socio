@@ -1,11 +1,10 @@
 use serde::{Deserialize, Serialize};
 use socio::{
-    async_trait, error,
+    Socio, async_trait, error,
     jwt::verify_jwt_with_jwks_endpoint,
     oauth2::{AuthUrl, ClientId, ClientSecret, RedirectUrl, Scope, TokenUrl},
     providers::{SocioProvider, StandardUser, UserAwareSocioProvider},
     types::{OpenIdTokenField, Response, SocioClient},
-    Socio,
 };
 
 const FACEBOOK_JWKS_ENDPOINT: &str = "https://www.facebook.com/.well-known/oauth/openid/jwks";
@@ -21,8 +20,9 @@ pub struct FacebookUser {
     aud: String,
     sub: String,
     email: Option<String>,
-    email_verified: Option<bool>,
     name: Option<String>,
+    family_name: Option<String>,
+    given_name: Option<String>,
     picture: Option<String>,
 }
 

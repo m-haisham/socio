@@ -422,6 +422,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "example-facebook"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "serde",
+ "serde_json",
+ "shared",
+ "socio",
+ "socio_providers",
+ "tokio",
+]
+
+[[package]]
 name = "example-google"
 version = "0.1.0"
 dependencies = [
