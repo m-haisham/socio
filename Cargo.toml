@@ -4,7 +4,13 @@ default-members = ["socio"]
 resolver = "2"
 
 [workspace.package]
+homepage = "https://github.com/m-haisham/socio"
+repository = "https://github.com/m-haisham/socio"
+license = "MIT"
+license-file = "LICENSE"
 edition = "2024"
+keywords = ["social", "login", "oauth", "authentication", "identity"]
+categories = ["authentication", "web-programming"]
 
 [workspace.dependencies]
 serde = { version = "1.0.217", features = ["derive"] }
