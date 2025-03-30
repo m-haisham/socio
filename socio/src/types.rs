@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{borrow::Cow, time::Duration};
 
 use oauth2::{
     AccessToken, AuthUrl, AuthorizationCode, Client, ClientId, ClientSecret, CsrfToken,
@@ -60,18 +60,24 @@ impl SocioClient {
         client
     }
 
-    pub fn authorize(&self) -> error::Result<AuthorizationRequest> {
+    pub fn authorize(&self, params: Option<ExtraParams>) -> error::Result<AuthorizationRequest> {
         let client = self.clone().client::<EmptyExtraTokenFields>();
 
         let csrf_token = CsrfToken::new_random();
         let (pkce_challenge, pkce_verifier) = oauth2::PkceCodeChallenge::new_random_sha256();
 
-        // TODO: add support for extra params
-        let (url, csrf_token) = client
+        let mut request = client
             .authorize_url(|| csrf_token.clone())
             .add_scopes(self.scopes.clone())
-            .set_pkce_challenge(pkce_challenge)
-            .url();
+            .set_pkce_challenge(pkce_challenge);
+
+        if let Some(params) = params {
+            for (key, value) in params.0 {
+                request = request.add_extra_param(key, value);
+            }
+        }
+
+        let (url, csrf_token) = request.url();
 
         Ok(AuthorizationRequest {
             url,
@@ -164,5 +170,18 @@ impl<T: Into<StandardUser>> Response<T> {
             scopes: self.scopes,
             user: self.user.into(),
         }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ExtraParams<'a>(Vec<(Cow<'a, str>, Cow<'a, str>)>);
+
+impl<'a> ExtraParams<'a> {
+    pub fn new() -> Self {
+        ExtraParams(Vec::new())
+    }
+
+    pub fn push(&mut self, key: Cow<'a, str>, value: Cow<'a, str>) {
+        self.0.push((key, value));
     }
 }

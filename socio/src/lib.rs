@@ -10,11 +10,11 @@ pub use async_trait::async_trait;
 pub use oauth2;
 
 use oauth2::{
-    basic::BasicTokenType, AuthorizationCode, ExtraTokenFields, PkceCodeVerifier,
-    StandardTokenResponse,
+    AuthorizationCode, ExtraTokenFields, PkceCodeVerifier, StandardTokenResponse,
+    basic::BasicTokenType,
 };
 use providers::{SocioProvider, UserAwareSocioProvider};
-use types::{AuthorizationRequest, Response, SocioClient};
+use types::{AuthorizationRequest, ExtraParams, Response, SocioClient};
 
 #[derive(Clone, Debug)]
 pub struct Socio<T> {
@@ -36,7 +36,14 @@ impl<T> Socio<T> {
     }
 
     pub fn authorize(&self) -> error::Result<AuthorizationRequest> {
-        self.client().authorize()
+        self.client().authorize(None)
+    }
+
+    pub fn authorize_with_params(
+        &self,
+        params: Option<ExtraParams>,
+    ) -> error::Result<AuthorizationRequest> {
+        self.client().authorize(params)
     }
 
     pub async fn exchange_code<Fields: ExtraTokenFields>(

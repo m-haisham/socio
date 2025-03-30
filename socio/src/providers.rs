@@ -1,6 +1,6 @@
 use crate::{
     error,
-    types::{AuthorizationRequest, Response, SocioClient},
+    types::{AuthorizationRequest, ExtraParams, Response, SocioClient},
 };
 use async_trait::async_trait;
 use oauth2::{AuthorizationCode, PkceCodeVerifier};
@@ -18,8 +18,12 @@ pub struct StandardUser {
 
 #[async_trait]
 pub trait SocioProvider {
-    fn authorize(&self, client: &SocioClient) -> error::Result<AuthorizationRequest> {
-        client.authorize()
+    fn authorize(
+        &self,
+        client: &SocioClient,
+        params: Option<ExtraParams>,
+    ) -> error::Result<AuthorizationRequest> {
+        client.authorize(params)
     }
 
     async fn exchange_code_standard(
