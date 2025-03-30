@@ -9,6 +9,7 @@ repository = "https://github.com/m-haisham/socio"
 license = "MIT"
 license-file = "LICENSE"
 edition = "2024"
+readme = "README.md"
 keywords = ["social", "login", "oauth", "authentication", "identity"]
 categories = ["authentication", "web-programming"]
 

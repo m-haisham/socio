@@ -9,6 +9,7 @@ license-file.workspace = true
 edition.workspace = true
 keywords.workspace = true
 categories.workspace = true
+readme.workspace = true
 
 [dependencies]
 async-trait = "0.1.86"
