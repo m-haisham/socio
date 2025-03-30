@@ -5,7 +5,6 @@ version = "0.1.0"
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
-license-file.workspace = true
 edition.workspace = true
 keywords.workspace = true
 categories.workspace = true
