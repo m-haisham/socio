@@ -41,9 +41,9 @@ impl<T> Socio<T> {
 
     pub fn authorize_with_params(
         &self,
-        params: Option<ExtraParams>,
+        params: ExtraParams,
     ) -> error::Result<AuthorizationRequest> {
-        self.client().authorize(params)
+        self.client().authorize(Some(params))
     }
 
     pub async fn exchange_code<Fields: ExtraTokenFields>(
