@@ -1,11 +1,10 @@
 use serde::{Deserialize, Serialize};
 use socio::{
-    async_trait, error,
+    Socio, async_trait, error,
     jwt::verify_jwt_with_jwks_endpoint,
     oauth2::{AuthUrl, ClientId, ClientSecret, RedirectUrl, Scope, TokenUrl},
     providers::{SocioProvider, StandardUser, UserAwareSocioProvider},
     types::{OpenIdTokenField, Response, SocioClient},
-    Socio,
 };
 
 #[derive(Clone, Debug)]
@@ -18,7 +17,8 @@ pub struct MicrosoftUser {
     sub: String,
     name: String,
     preferred_username: String,
-    email: String,
+    #[serde(default)]
+    email: Option<String>,
 }
 
 #[async_trait]
@@ -81,7 +81,7 @@ impl From<MicrosoftUser> for StandardUser {
         StandardUser {
             id: value.sub,
             name: Some(value.name),
-            email: Some(value.email),
+            email: value.email,
             picture: None,
         }
     }
