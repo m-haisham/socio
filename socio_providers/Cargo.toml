@@ -1,7 +1,7 @@
 [package]
 name = "socio_providers"
 description = "Social login providers for socio"
-version = "0.1.2"
+version = "0.1.3"
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
