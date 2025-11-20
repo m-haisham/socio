@@ -13,14 +13,14 @@ pub struct Facebook;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FacebookUser {
-    iss: String,
-    aud: String,
-    sub: String,
-    email: Option<String>,
-    name: Option<String>,
-    family_name: Option<String>,
-    given_name: Option<String>,
-    picture: Option<String>,
+    pub iss: String,
+    pub aud: String,
+    pub sub: String,
+    pub email: Option<String>,
+    pub name: Option<String>,
+    pub family_name: Option<String>,
+    pub given_name: Option<String>,
+    pub picture: Option<String>,
 }
 
 #[async_trait]

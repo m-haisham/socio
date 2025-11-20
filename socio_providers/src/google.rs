@@ -13,13 +13,13 @@ pub struct Google;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GoogleUser {
-    iss: String,
-    aud: String,
-    sub: String,
-    email: Option<String>,
-    email_verified: Option<bool>,
-    name: Option<String>,
-    picture: Option<String>,
+    pub iss: String,
+    pub aud: String,
+    pub sub: String,
+    pub email: Option<String>,
+    pub email_verified: Option<bool>,
+    pub name: Option<String>,
+    pub picture: Option<String>,
 }
 
 #[async_trait]

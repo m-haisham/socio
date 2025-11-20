@@ -12,13 +12,13 @@ pub struct Microsoft;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MicrosoftUser {
-    iss: String,
-    aud: String,
-    sub: String,
-    name: String,
-    preferred_username: String,
+    pub iss: String,
+    pub aud: String,
+    pub sub: String,
+    pub name: String,
+    pub preferred_username: String,
     #[serde(default)]
-    email: Option<String>,
+    pub email: Option<String>,
 }
 
 #[async_trait]
