@@ -85,8 +85,8 @@ pub struct GoogleConfig {
 
 impl From<GoogleConfig> for SocioClient {
     fn from(value: GoogleConfig) -> Self {
-        let auth_url = url!("https://accounts.google.com/o/oauth2/auth");
-        let token_url = url!("https://accounts.google.com/o/oauth2/token");
+        let auth_url = url!("https://accounts.google.com/o/oauth2/v2/auth");
+        let token_url = url!("https://oauth2.googleapis.com/token");
 
         SocioClient {
             client_id: value.client_id,
