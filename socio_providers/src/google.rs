@@ -92,8 +92,8 @@ impl From<GoogleConfig> for SocioClient {
             client_id: value.client_id,
             client_secret: value.client_secret,
             redirect_uri: value.redirect_url,
-            authorize_endpoint: AuthUrl::from_url(auth_url), // SAFETY: This is safe because the URL is valid
-            token_endpoint: TokenUrl::from_url(token_url), // SAFETY: This is safe because the URL is valid
+            authorize_endpoint: AuthUrl::from_url(auth_url),
+            token_endpoint: TokenUrl::from_url(token_url),
             scopes: ["openid", "profile", "email"]
                 .iter()
                 .map(|s| Scope::new(s.to_string()))
