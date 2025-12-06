@@ -25,10 +25,10 @@ rocket = { version = "^0.5", optional = true }
 actix-web = { version = "^4.0", optional = true }
 
 [features]
-default = ["jwt", "native-tls"]
+default = ["jwt", "default-tls"]
 axum = ["dep:axum-core"]
 jwt = ["dep:jsonwebtoken"]
 rocket = ["dep:rocket"]
 actix = ["dep:actix-web"]
-native-tls = ["reqwest/native-tls"]
+default-tls = ["reqwest/default-tls"]
 rustls-tls = ["reqwest/rustls-tls"]
