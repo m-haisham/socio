@@ -14,7 +14,7 @@ readme.workspace = true
 async-trait = "0.1.86"
 http = "1.2.0"
 oauth2 = "5.0.0"
-reqwest = { version = "^0.12", features = ["json"] }
+reqwest = { version = "^0.12.24", features = ["json", "charset", "http2", "system-proxy"], default-features = false }
 serde.workspace = true
 thiserror = "2.0.11"
 url = { version = "2.5.4", features = ["serde"] }
@@ -25,8 +25,10 @@ rocket = { version = "^0.5", optional = true }
 actix-web = { version = "^4.0", optional = true }
 
 [features]
-default = ["jwt"]
+default = ["jwt", "native-tls"]
 axum = ["dep:axum-core"]
 jwt = ["dep:jsonwebtoken"]
 rocket = ["dep:rocket"]
 actix = ["dep:actix-web"]
+native-tls = ["reqwest/native-tls"]
+rustls-tls = ["reqwest/rustls-tls"]
