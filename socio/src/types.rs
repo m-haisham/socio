@@ -10,6 +10,7 @@ use oauth2::{
         BasicTokenType,
     },
 };
+use oauth2_reqwest::ReqwestClient;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -93,10 +94,11 @@ impl SocioClient {
     ) -> error::Result<StandardTokenResponse<Fields, BasicTokenType>> {
         let client = self.clone().client::<Fields>();
 
-        let http_client = reqwest::ClientBuilder::new()
+        let http_client: ReqwestClient = reqwest::ClientBuilder::new()
             // Following redirects opens the client up to SSRF vulnerabilities.
             .redirect(reqwest::redirect::Policy::none())
-            .build()?;
+            .build()?
+            .into();
 
         let response = client
             .exchange_code(code)
