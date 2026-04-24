@@ -14,5 +14,5 @@ categories = ["authentication", "web-programming"]
 
 [workspace.dependencies]
 serde = { version = "1.0.217", features = ["derive"] }
-jsonwebtoken = "9.3.1"
+jsonwebtoken = "10.3.0"
 url = "2.5.4"
