@@ -52,13 +52,11 @@ pub struct SocioClient {
 
 impl SocioClient {
     pub fn client<Fields: ExtraTokenFields>(self) -> CustomClient<Fields> {
-        let client = CustomClient::<Fields, EndpointNotSet, EndpointNotSet>::new(self.client_id)
+        CustomClient::<Fields, EndpointNotSet, EndpointNotSet>::new(self.client_id)
             .set_client_secret(self.client_secret)
             .set_auth_uri(self.authorize_endpoint)
             .set_token_uri(self.token_endpoint)
-            .set_redirect_uri(self.redirect_uri);
-
-        client
+            .set_redirect_uri(self.redirect_uri)
     }
 
     pub fn authorize(&self, params: Option<ExtraParams>) -> error::Result<AuthorizationRequest> {
@@ -177,6 +175,12 @@ impl<T: Into<StandardUser>> Response<T> {
 
 #[derive(Clone, Debug)]
 pub struct ExtraParams<'a>(Vec<(Cow<'a, str>, Cow<'a, str>)>);
+
+impl<'a> Default for ExtraParams<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl<'a> ExtraParams<'a> {
     pub fn new() -> Self {
